@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- AppTheme -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Arka plan rengi -->
+        <item name="android:windowBackground">@color/white</item>
+        <!-- ActionBar (Toolbar) rengi -->
+        <item name="colorPrimary">@color/teal_200</item>
+        <!-- ActionBar (Toolbar) yazı rengi -->
+        <item name="android:textColorPrimary">@color/black</item>
+        <!-- StatusBar (Durum Çubuğu) rengi -->
+        <item name="android:statusBarColor">@color/teal_200</item>
+        <!-- Buton rengi -->
+        <item name="colorButtonNormal">@color/teal_200</item>
+    </style>
+
+    <!-- Theme.DgnVeri -->
+    <style name="Theme.DgnVeri" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Diğer özel stiller buraya eklenebilir -->
+    </style>
+</resources>

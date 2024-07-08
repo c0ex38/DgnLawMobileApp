@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">DGN Hukuk</string>
+    <string name="select_call_type">Arama Türü Seçin</string>
+    <string name="my_image_description">logo</string>
+    <string name="button_phone_numbers">Telefon Numaralarını Göster</string>
+    <string name="button_logout">Çıkış Yap</string>
+    <string name="text_name">İsim</string>
+    <string name="text_phone_number">Telefon Numarası</string>
+    <string name="channel_name">Your Channel Name</string>
+    <string name="channel_description">channel_description</string>
+</resources>

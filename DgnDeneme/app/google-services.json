@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "844514523290",
+    "firebase_url": "https://my-application-a5599-default-rtdb.firebaseio.com",
+    "project_id": "my-application-a5599",
+    "storage_bucket": "my-application-a5599.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:844514523290:android:56745f4b7b5dda7c560723",
+        "android_client_info": {
+          "package_name": "com.example.dgndeneme"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5hRBf9oszBdA_VgcAiL08cTHgYgMO0_A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
