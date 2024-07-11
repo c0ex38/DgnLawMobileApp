@@ -39,10 +39,6 @@ public class LogIn extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        // Kullanıcı zaten giriş yaptıysa, ana sayfaya yönlendir
-        if (mUser != null) {
-            navigateToMainPage();
-        }
     }
 
     public void girisYap(View view) {
