@@ -81,25 +81,6 @@ public class MainPage extends AppCompatActivity {
         }
     }
 
-    private void setupPhoneStateListener() {
-        // TelephonyManager ve PhoneStateListener'ı başlat
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        PhoneStateListener phoneStateListener = new PhoneStateListener() {
-            @Override
-            public void onCallStateChanged(int state, String phoneNumber) {
-                if (callInProgress && state == TelephonyManager.CALL_STATE_IDLE) {
-                    callEndTime = getCurrentDateTime();
-                    if (currentSnapshot != null) {
-                        currentSnapshot.getRef().child("callEndTime").setValue(callEndTime);
-                    }
-                    callInProgress = false;
-                    Log.d(TAG, "Arama bitiş zamanı kaydedildi: " + callEndTime);
-                }
-            }
-        };
-        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -158,7 +139,6 @@ public class MainPage extends AppCompatActivity {
      */
     private void makeCall(String phoneNumber, DataSnapshot snapshot) {
         String callStartTime = getCurrentDateTime();
-        callEndTime = null;
         callInProgress = true;
         currentSnapshot = snapshot;
 
@@ -168,11 +148,50 @@ public class MainPage extends AppCompatActivity {
             startActivity(callIntent);
             snapshot.getRef().child("isCalled").setValue(1);
             snapshot.getRef().child("callStartTime").setValue(callStartTime);
-            snapshot.getRef().child("callEndTime").setValue(callEndTime);
-            Log.d(TAG, "Arama başlama zamanı kaydedildi: " + callStartTime);
+            Log.d(TAG, "Arama başlama zamanı kaydedildi: " + callStartTime + ", Telefon numarası: " + phoneNumber);
         } else {
             Log.w(TAG, "Arama yapma izni yok.");
         }
+    }
+
+    private void setupPhoneStateListener() {
+        Log.d(TAG, "PhoneStateListener kuruluyor."); // Log mesajı eklendi
+        // TelephonyManager ve PhoneStateListener'ı başlat
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        PhoneStateListener phoneStateListener = new PhoneStateListener() {
+            @Override
+            public void onCallStateChanged(int state, String phoneNumber) {
+                Log.d(TAG, "onCallStateChanged çağrıldı: state=" + state + ", phoneNumber=" + phoneNumber); // Log mesajı eklendi
+
+                switch (state) {
+                    case TelephonyManager.CALL_STATE_OFFHOOK:
+                        Log.d(TAG, "Telefon görüşmesi başlatıldı.");
+                        break;
+                    case TelephonyManager.CALL_STATE_IDLE:
+                        if (callInProgress) {
+                            callEndTime = getCurrentDateTime();
+                            if (currentSnapshot != null) {
+                                currentSnapshot.getRef().child("callEndTime").setValue(callEndTime);
+                                currentSnapshot.getRef().child("isCalled").setValue(2); // isCalled değerini 2 olarak güncelle
+                                Log.d(TAG, "Arama bitiş zamanı ve isCalled kaydedildi: " + callEndTime);
+                            } else {
+                                Log.d(TAG, "currentSnapshot null");
+                            }
+                            callInProgress = false;
+                        } else {
+                            Log.d(TAG, "callInProgress false");
+                        }
+                        break;
+                    case TelephonyManager.CALL_STATE_RINGING:
+                        Log.d(TAG, "Telefon çalıyor: " + phoneNumber);
+                        break;
+                    default:
+                        Log.d(TAG, "Bilinmeyen arama durumu: " + state);
+                        break;
+                }
+            }
+        };
+        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
     }
 
     private String getCurrentDateTime() {
