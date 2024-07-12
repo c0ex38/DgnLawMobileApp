@@ -38,9 +38,9 @@ public class MainPage extends AppCompatActivity {
     private ValueEventListener outgoingListener;
     private boolean doubleBackToExitPressedOnce = false;
 
-    private String callEndTime;
-    private boolean callInProgress = false;
-    private DataSnapshot currentSnapshot;
+    private static String callEndTime;
+    private static boolean callInProgress = false;
+    private static DataSnapshot currentSnapshot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +52,9 @@ public class MainPage extends AppCompatActivity {
         // FirebaseListenerService servisini başlat
         Intent intent = new Intent(this, FirebaseListenerService.class);
         startService(intent);
+
+        // Telefon durumu dinleyicisini ayarla
+        setupPhoneStateListener();
     }
 
     private void checkPermissions() {
@@ -105,9 +108,6 @@ public class MainPage extends AppCompatActivity {
         }
     }
 
-    /**
-     * Outgoings düğümünü dinlemeye başlar.
-     */
     private void startOutgoingListener() {
         outgoingListener = new ValueEventListener() {
             @Override
@@ -131,12 +131,6 @@ public class MainPage extends AppCompatActivity {
         userOutgoingRef.addValueEventListener(outgoingListener);
     }
 
-    /**
-     * Telefon numarasını arar ve isCalled değerini günceller.
-     *
-     * @param phoneNumber Aranacak telefon numarası
-     * @param snapshot İlgili veri snapshot'ı
-     */
     private void makeCall(String phoneNumber, DataSnapshot snapshot) {
         String callStartTime = getCurrentDateTime();
         callInProgress = true;
@@ -155,25 +149,29 @@ public class MainPage extends AppCompatActivity {
     }
 
     private void setupPhoneStateListener() {
-        Log.d(TAG, "PhoneStateListener kuruluyor."); // Log mesajı eklendi
-        // TelephonyManager ve PhoneStateListener'ı başlat
+        Log.d(TAG, "PhoneStateListener kuruluyor.");
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         PhoneStateListener phoneStateListener = new PhoneStateListener() {
             @Override
             public void onCallStateChanged(int state, String phoneNumber) {
-                Log.d(TAG, "onCallStateChanged çağrıldı: state=" + state + ", phoneNumber=" + phoneNumber); // Log mesajı eklendi
+                Log.d(TAG, "onCallStateChanged çağrıldı: state=" + state + ", phoneNumber=" + phoneNumber);
 
                 switch (state) {
                     case TelephonyManager.CALL_STATE_OFFHOOK:
                         Log.d(TAG, "Telefon görüşmesi başlatıldı.");
                         break;
                     case TelephonyManager.CALL_STATE_IDLE:
+                        Log.d(TAG, "Telefon görüşmesi sona erdi.");
                         if (callInProgress) {
                             callEndTime = getCurrentDateTime();
+                            Log.d(TAG, "callEndTime: " + callEndTime);
                             if (currentSnapshot != null) {
-                                currentSnapshot.getRef().child("callEndTime").setValue(callEndTime);
-                                currentSnapshot.getRef().child("isCalled").setValue(2); // isCalled değerini 2 olarak güncelle
-                                Log.d(TAG, "Arama bitiş zamanı ve isCalled kaydedildi: " + callEndTime);
+                                currentSnapshot.getRef().child("callEndTime").setValue(callEndTime)
+                                        .addOnSuccessListener(aVoid -> Log.d(TAG, "callEndTime başarıyla kaydedildi"))
+                                        .addOnFailureListener(e -> Log.e(TAG, "callEndTime kaydedilirken hata oluştu: " + e.getMessage()));
+                                currentSnapshot.getRef().child("isCalled").setValue(2)
+                                        .addOnSuccessListener(aVoid -> Log.d(TAG, "isCalled başarıyla güncellendi"))
+                                        .addOnFailureListener(e -> Log.e(TAG, "isCalled güncellenirken hata oluştu: " + e.getMessage()));
                             } else {
                                 Log.d(TAG, "currentSnapshot null");
                             }
@@ -192,6 +190,22 @@ public class MainPage extends AppCompatActivity {
             }
         };
         telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+    }
+
+    public static void updateCallEndTime(Context context) {
+        callEndTime = DateFormat.getDateTimeInstance().format(new Date());
+        Log.d(TAG, "updateCallEndTime çağrıldı: " + callEndTime);
+
+        if (currentSnapshot != null) {
+            currentSnapshot.getRef().child("callEndTime").setValue(callEndTime)
+                    .addOnSuccessListener(aVoid -> Log.d(TAG, "callEndTime başarıyla kaydedildi"))
+                    .addOnFailureListener(e -> Log.e(TAG, "callEndTime kaydedilirken hata oluştu: " + e.getMessage()));
+            currentSnapshot.getRef().child("isCalled").setValue(2)
+                    .addOnSuccessListener(aVoid -> Log.d(TAG, "isCalled başarıyla güncellendi"))
+                    .addOnFailureListener(e -> Log.e(TAG, "isCalled güncellenirken hata oluştu: " + e.getMessage()));
+        } else {
+            Log.d(TAG, "currentSnapshot null");
+        }
     }
 
     private String getCurrentDateTime() {
